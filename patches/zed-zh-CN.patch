@@ -1,0 +1,644 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 01d0604..ac39f06 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2072,6 +2072,12 @@ version = "0.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "349a06037c7bf932dd7e7d1f653678b2038b9ad46a74102f1fc7bd7872678cce"
+ 
++[[package]]
++name = "base62"
++version = "2.2.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a3a647dce9631f152a99ec16cfc09267ae55fe280d5dc288964027d458076323"
++
+ [[package]]
+ name = "base64"
+ version = "0.21.7"
+@@ -7380,6 +7386,17 @@ dependencies = [
+  "regex-syntax",
+ ]
+ 
++[[package]]
++name = "globwalk"
++version = "0.8.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "93e3af942408868f6934a7b85134a3230832b9977cf66125df2f9edcfce4ddcc"
++dependencies = [
++ "bitflags 1.3.2",
++ "ignore",
++ "walkdir",
++]
++
+ [[package]]
+ name = "gloo-timers"
+ version = "0.3.0"
+@@ -9149,6 +9166,15 @@ dependencies = [
+  "either",
+ ]
+ 
++[[package]]
++name = "itertools"
++version = "0.11.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
++dependencies = [
++ "either",
++]
++
+ [[package]]
+ name = "itertools"
+ version = "0.13.0"
+@@ -15794,6 +15820,54 @@ dependencies = [
+  "walkdir",
+ ]
+ 
++[[package]]
++name = "rust-i18n"
++version = "4.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "752c95174ef2555cd95873d6f12d0bee9f0a1dcbf1b631dde847053a29174996"
++dependencies = [
++ "globwalk",
++ "regex",
++ "rust-i18n-macro",
++ "rust-i18n-support",
++ "smallvec",
++]
++
++[[package]]
++name = "rust-i18n-macro"
++version = "4.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cc99fd028c912b59841bd745ec11c2dda112549ae6de25a850f384bb59d1a8f8"
++dependencies = [
++ "glob",
++ "proc-macro2",
++ "quote",
++ "rust-i18n-support",
++ "serde",
++ "serde_json",
++ "serde_yaml",
++ "syn 2.0.117",
++]
++
++[[package]]
++name = "rust-i18n-support"
++version = "4.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3dfb30689b70c7fd955e8e5c709fa055a778ae024ef6a382c4eb425dd2c2fabb"
++dependencies = [
++ "arc-swap",
++ "base62",
++ "globwalk",
++ "itertools 0.11.0",
++ "normpath",
++ "serde",
++ "serde_json",
++ "serde_yaml",
++ "siphasher 1.0.1",
++ "toml 0.8.23",
++ "triomphe",
++]
++
+ [[package]]
+ name = "rust_decimal"
+ version = "1.39.0"
+@@ -18701,6 +18775,7 @@ dependencies = [
+  "remote",
+  "remote_connection",
+  "rpc",
++ "rust-i18n",
+  "schemars 1.0.4",
+  "semver",
+  "serde",
+@@ -19422,6 +19497,7 @@ version = "0.1.15"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "dd69c5aa8f924c7519d6372789a74eac5b94fb0f8fcf0d4a97eb0bfc3e785f39"
+ dependencies = [
++ "arc-swap",
+  "serde",
+  "stable_deref_trait",
+ ]
+diff --git a/README.md b/README.md
+index 9f641fb..24840ee 100644
+--- a/README.md
++++ b/README.md
+@@ -1,3 +1,6 @@
++> [!IMPORTANT]
++> Remove this line to confirm you've reviewed this PR before submitting.
++
+ # Zed
+ 
+ [![Zed](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/zed-industries/zed/main/assets/badge/v0.json)](https://zed.dev)
+diff --git a/crates/cli/src/main.rs b/crates/cli/src/main.rs
+index 0f4d674..89a1f5a 100644
+--- a/crates/cli/src/main.rs
++++ b/crates/cli/src/main.rs
+@@ -1188,7 +1188,7 @@ mod windows {
+             CreateMutexW(
+                 None,
+                 false,
+-                &HSTRING::from(format!("{}-Instance-Mutex", app_identifier())),
++                &HSTRING::from(format!("{}-zh-CN-Instance-Mutex", app_identifier())),
+             )
+             .expect("Unable to create instance sync event")
+         };
+@@ -1231,7 +1231,7 @@ mod windows {
+             } else {
+                 unsafe {
+                     let pipe = CreateFileW(
+-                        &HSTRING::from(format!("\\\\.\\pipe\\{}-Named-Pipe", app_identifier())),
++                        &HSTRING::from(format!("\\\\.\\pipe\\{}-zh-CN-Named-Pipe", app_identifier())),
+                         GENERIC_WRITE.0,
+                         FILE_SHARE_MODE::default(),
+                         None,
+diff --git a/crates/title_bar/Cargo.toml b/crates/title_bar/Cargo.toml
+index 57aceb8..5bd18de 100644
+--- a/crates/title_bar/Cargo.toml
++++ b/crates/title_bar/Cargo.toml
+@@ -29,6 +29,7 @@ test-support = [
+ ]
+ 
+ [dependencies]
++rust-i18n = "4"
+ agent_settings.workspace = true
+ anyhow.workspace = true
+ auto_update.workspace = true
+diff --git a/crates/title_bar/locales/zh-CN.yml b/crates/title_bar/locales/zh-CN.yml
+new file mode 100644
+index 0000000..88cb4d8
+--- /dev/null
++++ b/crates/title_bar/locales/zh-CN.yml
+@@ -0,0 +1,226 @@
++# rust-i18n 单语言文件；文件名决定语言标识 zh-CN。
++# Zed 常用界面翻译起始词表，并非从 Zed 源码提取的完整语言包。
++# 源码必须使用完全一致的键调用 t! 才能显示对应翻译。
++# 官方 Zed 不会自动读取此文件，也不能将它作为 settings.json 使用。
++_version: 1
++
++"File": "文件"
++"Edit": "编辑"
++"View": "视图"
++"Selection": "选择"
++"Go": "转到"
++"Window": "窗口"
++"Help": "帮助"
++"New File": "新建文件"
++"New Window": "新建窗口"
++"Open File": "打开文件"
++"Open Folder": "打开文件夹"
++"Open Recent": "最近打开"
++"Add Folder to Project": "添加文件夹到项目"
++"Save": "保存"
++"Save As": "另存为"
++"Save All": "全部保存"
++"Close": "关闭"
++"Close Tab": "关闭标签页"
++"Close Window": "关闭窗口"
++"Quit": "退出"
++"Undo": "撤销"
++"Redo": "重做"
++"Cut": "剪切"
++"Copy": "复制"
++"Paste": "粘贴"
++"Select All": "全选"
++"Find": "查找"
++"Replace": "替换"
++"Find in Project": "在项目中查找"
++"Replace All": "全部替换"
++"Match Case": "区分大小写"
++"Whole Word": "全字匹配"
++"Regular Expression": "正则表达式"
++"Settings": "设置"
++"Open Settings": "打开设置"
++"Open Default Settings": "打开默认设置"
++"Keyboard Shortcuts": "键盘快捷键"
++"Command Palette": "命令面板"
++"Theme": "主题"
++"Light": "浅色"
++"Dark": "深色"
++"System": "跟随系统"
++"Font Size": "字号"
++"Extensions": "扩展"
++"Install": "安装"
++"Uninstall": "卸载"
++"Update": "更新"
++"Check for Updates": "检查更新"
++"Restart": "重启"
++"Project": "项目"
++"Projects": "项目"
++"Terminal": "终端"
++"New Terminal": "新建终端"
++"Problems": "问题"
++"Diagnostics": "诊断"
++"Errors": "错误"
++"Warnings": "警告"
++"Search": "搜索"
++"Outline": "大纲"
++"Tasks": "任务"
++"Run Task": "运行任务"
++"Debug": "调试"
++"Start Debugging": "开始调试"
++"Stop Debugging": "停止调试"
++"Breakpoint": "断点"
++"Step Over": "单步跳过"
++"Step Into": "单步进入"
++"Step Out": "单步跳出"
++"Continue": "继续"
++"Go to Definition": "转到定义"
++"Find All References": "查找所有引用"
++"Rename": "重命名"
++"Format Document": "格式化文档"
++"Code Actions": "代码操作"
++"Language Server": "语言服务器"
++"Restart Language Server": "重启语言服务器"
++"Select Toolchain": "选择工具链"
++"Add Toolchain": "添加工具链"
++"Python Interpreter": "Python 解释器"
++"Virtual Environment": "虚拟环境"
++"Open Folder in WSL": "在 WSL 中打开文件夹"
++"Open WSL": "打开 WSL"
++"Remote Development": "远程开发"
++"Connect": "连接"
++"Disconnect": "断开连接"
++"Connecting...": "正在连接…"
++"Downloading...": "正在下载…"
++"Loading...": "正在加载…"
++"Connected": "已连接"
++"Disconnected": "已断开连接"
++"Git": "Git"
++"Changes": "更改"
++"Stage All": "暂存全部更改"
++"Unstage All": "取消暂存全部更改"
++"Commit": "提交"
++"Push": "推送"
++"Pull": "拉取"
++"Fetch": "获取"
++"Branch": "分支"
++"Commit Message": "提交说明"
++"Agent": "智能体"
++"New Chat": "新建聊天"
++"Send": "发送"
++"Stop": "停止"
++"Retry": "重试"
++"Model": "模型"
++"Sign In": "登录"
++"Sign Out": "退出登录"
++"Cancel": "取消"
++"Confirm": "确认"
++"OK": "确定"
++"Apply": "应用"
++"Delete": "删除"
++"Remove": "移除"
++"Enable": "启用"
++"Disable": "禁用"
++"Learn More": "了解更多"
++"About Zed": "关于 Zed"
++"Zed": "Zed"
++"Run": "运行"
++"Application menu": "应用菜单"
++"Open Application Menu": "打开应用菜单"
++"Zoom In": "放大"
++"Zoom Out": "缩小"
++"Reset Zoom": "重置缩放"
++"Reset All Zoom": "重置全部缩放"
++"Toggle Left Dock": "显示或隐藏左侧面板"
++"Toggle Right Dock": "显示或隐藏右侧面板"
++"Toggle Bottom Dock": "显示或隐藏底部面板"
++"Toggle All Docks": "显示或隐藏全部面板"
++"Editor Layout": "编辑器布局"
++"Split Up": "向上拆分"
++"Split Down": "向下拆分"
++"Split Left": "向左拆分"
++"Split Right": "向右拆分"
++"Project Panel": "项目面板"
++"Outline Panel": "大纲面板"
++"Collab Panel": "协作面板"
++"Terminal Panel": "终端面板"
++"Debugger Panel": "调试面板"
++"Agent Panel": "智能体面板"
++"Git Panel": "Git 面板"
++"Toggle GPUI Inspector": "显示或隐藏 GPUI 检查器"
++"Open Settings File": "打开设置文件"
++"Open Project Settings": "打开项目设置"
++"Open Project Settings File": "打开项目设置文件"
++"Open Keymap": "打开快捷键设置"
++"Open Keymap File": "打开快捷键配置文件"
++"Open Default Key Bindings": "打开默认快捷键配置"
++"Select Theme...": "选择主题…"
++"Select Icon Theme...": "选择图标主题…"
++"Services": "服务"
++"Install CLI": "安装命令行工具"
++"Hide Zed": "隐藏 Zed"
++"Hide Others": "隐藏其他应用"
++"Show All": "全部显示"
++"Quit Zed": "退出 Zed"
++"New": "新建文件"
++"Open File...": "打开文件…"
++"Open Folder...": "打开文件夹…"
++"Open…": "打开…"
++"Open Recent…": "最近打开…"
++"Open Remote…": "打开远程项目…"
++"Add Folder to Project…": "添加文件夹到项目…"
++"Save As…": "另存为…"
++"Close Editor": "关闭编辑器标签页"
++"Close Project": "关闭项目"
++"Toggle Line Comment": "添加或取消行注释"
++"Expand Selection": "扩大选择范围"
++"Shrink Selection": "缩小选择范围"
++"Select Next Sibling": "选择下一个同级节点"
++"Select Previous Sibling": "选择上一个同级节点"
++"Add Cursor Above": "在上方添加光标"
++"Add Cursor Below": "在下方添加光标"
++"Select Next Occurrence": "选择下一处匹配"
++"Select Previous Occurrence": "选择上一处匹配"
++"Select All Occurrences": "选择全部匹配"
++"Move Line Up": "向上移动行"
++"Move Line Down": "向下移动行"
++"Duplicate Selection": "复制所选内容"
++"Back": "后退"
++"Forward": "前进"
++"Command Palette...": "命令面板…"
++"Go to File...": "转到文件…"
++"Go to Symbol in Editor...": "转到编辑器中的符号…"
++"Go to Symbol in Project": "转到项目中的符号"
++"Go to Line/Column...": "转到行或列…"
++"Go to Declaration": "转到声明"
++"Go to Type Definition": "转到类型定义"
++"Show Incoming Calls": "显示传入调用"
++"Show Outgoing Calls": "显示传出调用"
++"Next Problem": "下一个问题"
++"Previous Problem": "上一个问题"
++"Spawn Task": "运行任务"
++"Start Debugger": "启动调试器"
++"Edit tasks.json…": "编辑 tasks.json…"
++"Edit debug.json…": "编辑 debug.json…"
++"Report a Problem...": "报告问题…"
++"Request Feature...": "提出功能建议…"
++"Email Us...": "联系我们…"
++"Documentation": "文档"
++"Zed Repository": "Zed 源码仓库"
++"Zed Twitter": "Zed 的 Twitter"
++"Join the Team": "加入团队"
++"Toggle Breakpoint": "添加或移除断点"
++"Edit Breakpoint": "编辑断点"
++"Clear All Breakpoints": "清除全部断点"
++"Minimize": "最小化"
++"Zoom": "缩放窗口"
++"View Release Notes Locally": "查看本地发行说明"
++"View Telemetry": "查看遥测日志"
++"View Dependency Licenses": "查看依赖许可证"
++"Show Welcome": "显示欢迎页面"
++"File Bug Report...": "提交错误报告…"
++"Restricted Mode": "受限模式"
++"Create Branch": "创建分支"
++"Copy and Trim": "复制并去除首尾空白"
++"Signing in…": "正在登录…"
++"Restart to update Zed": "重启以更新 Zed"
++"Keymap": "快捷键"
+diff --git a/crates/title_bar/src/application_menu.rs b/crates/title_bar/src/application_menu.rs
+index ced552d..3b91b31 100644
+--- a/crates/title_bar/src/application_menu.rs
++++ b/crates/title_bar/src/application_menu.rs
+@@ -143,7 +143,12 @@ impl ApplicationMenu {
+                         checked,
+                         disabled,
+                         ..
+-                    } => menu.action_checked_with_disabled(name, action, checked, disabled),
++                    } => menu.action_checked_with_disabled(
++                        crate::chinese_ui_text(&name),
++                        action,
++                        checked,
++                        disabled,
++                    ),
+                     OwnedMenuItem::Submenu(submenu) => {
+                         submenu
+                             .items
+@@ -156,8 +161,12 @@ impl ApplicationMenu {
+                                     checked,
+                                     disabled,
+                                     ..
+-                                } => menu
+-                                    .action_checked_with_disabled(name, action, checked, disabled),
++                                } => menu.action_checked_with_disabled(
++                                    crate::chinese_ui_text(&name),
++                                    action,
++                                    checked,
++                                    disabled,
++                                ),
+                                 OwnedMenuItem::Submenu(_) => menu,
+                                 OwnedMenuItem::SystemMenu(_) => {
+                                     // A system menu doesn't make sense in this context, so ignore it
+@@ -196,8 +205,8 @@ impl ApplicationMenu {
+                         .style(ButtonStyle::Subtle)
+                         .icon_size(IconSize::Small)
+                         .tab_index(0isize)
+-                        .aria_label("Application menu"),
+-                        Tooltip::text("Open Application Menu"),
++                        .aria_label(crate::chinese_ui_text("Application menu")),
++                        Tooltip::text(crate::chinese_ui_text("Open Application Menu")),
+                     )
+                     .with_handle(handle),
+             )
+@@ -226,7 +235,7 @@ impl ApplicationMenu {
+                     .trigger(
+                         Button::new(
+                             SharedString::from(format!("{}-menu-trigger", menu_name)),
+-                            menu_name,
++                            crate::chinese_ui_text(menu_name.as_ref()),
+                         )
+                         .style(ButtonStyle::Subtle)
+                         .label_size(LabelSize::Small)
+diff --git a/crates/title_bar/src/title_bar.rs b/crates/title_bar/src/title_bar.rs
+index 09c36b3..edbccec 100644
+--- a/crates/title_bar/src/title_bar.rs
++++ b/crates/title_bar/src/title_bar.rs
+@@ -5,6 +5,25 @@ mod plan_chip;
+ mod title_bar_settings;
+ mod update_version;
+ 
++rust_i18n::i18n!("locales");
++
++fn chinese_ui_text(text: &str) -> String {
++    rust_i18n::t!(text, locale = "zh-CN").into_owned()
++}
++
++#[cfg(test)]
++mod chinese_ui_tests {
++    #[test]
++    fn translates_menu_labels_and_preserves_unknown_labels() {
++        assert_eq!(super::chinese_ui_text("File"), "文件");
++        assert_eq!(super::chinese_ui_text("Save As…"), "另存为…");
++        assert_eq!(
++            super::chinese_ui_text("Untranslated action"),
++            "Untranslated action"
++        );
++    }
++}
++
+ use crate::application_menu::{ApplicationMenu, show_menus};
+ use crate::plan_chip::PlanChip;
+ use agent_settings::{AgentSettings, WindowLayout};
+@@ -391,7 +410,7 @@ impl Render for TitleBar {
+                 )
+                 .when(is_signing_in, |this| {
+                     this.child(
+-                        Label::new("Signing in…")
++                        Label::new(chinese_ui_text("Signing in…"))
+                             .size(LabelSize::Small)
+                             .color(Color::Muted)
+                             .with_animation(
+@@ -709,32 +728,35 @@ impl TitleBar {
+             return None;
+         }
+ 
+-        let button = Button::new("restricted_mode_trigger", "Restricted Mode")
+-            .style(ButtonStyle::Tinted(TintColor::Warning))
+-            .label_size(LabelSize::Small)
+-            .color(Color::Warning)
+-            .start_icon(
+-                Icon::new(IconName::Warning)
+-                    .size(IconSize::Small)
+-                    .color(Color::Warning),
++        let button = Button::new(
++            "restricted_mode_trigger",
++            chinese_ui_text("Restricted Mode"),
++        )
++        .style(ButtonStyle::Tinted(TintColor::Warning))
++        .label_size(LabelSize::Small)
++        .color(Color::Warning)
++        .start_icon(
++            Icon::new(IconName::Warning)
++                .size(IconSize::Small)
++                .color(Color::Warning),
++        )
++        .tooltip(|_, cx| {
++            Tooltip::with_meta(
++                "You're in Restricted Mode",
++                Some(&ToggleWorktreeSecurity),
++                "Mark this project as trusted and unlock all features",
++                cx,
+             )
+-            .tooltip(|_, cx| {
+-                Tooltip::with_meta(
+-                    "You're in Restricted Mode",
+-                    Some(&ToggleWorktreeSecurity),
+-                    "Mark this project as trusted and unlock all features",
+-                    cx,
+-                )
++        })
++        .on_click({
++            cx.listener(move |this, _, window, cx| {
++                this.workspace
++                    .update(cx, |workspace, cx| {
++                        workspace.show_worktree_trust_security_modal(true, window, cx)
++                    })
++                    .log_err();
+             })
+-            .on_click({
+-                cx.listener(move |this, _, window, cx| {
+-                    this.workspace
+-                        .update(cx, |workspace, cx| {
+-                            workspace.show_worktree_trust_security_modal(true, window, cx)
+-                        })
+-                        .log_err();
+-                })
+-            });
++        });
+ 
+         if ui::utils::MACOS_SDK_26_OR_LATER {
+             // Make up for Tahoe's traffic light buttons having less spacing around them
+@@ -751,7 +773,7 @@ impl TitleBar {
+ 
+         if self.project.read(cx).is_disconnected(cx) {
+             return Some(
+-                Button::new("disconnected", "Disconnected")
++                Button::new("disconnected", chinese_ui_text("Disconnected"))
+                     .disabled(true)
+                     .color(Color::Disabled)
+                     .label_size(LabelSize::Small)
+@@ -1042,7 +1064,7 @@ impl TitleBar {
+                 };
+ 
+                 let trigger = if is_detached_head {
+-                    Button::new("project_branch_trigger", "Create Branch")
++                    Button::new("project_branch_trigger", chinese_ui_text("Create Branch"))
+                         .selected_style(ButtonStyle::Tinted(TintColor::Accent))
+                         .label_size(LabelSize::Small)
+                         .tab_index(0isize)
+@@ -1161,7 +1183,7 @@ impl TitleBar {
+                 div()
+                     .id("disconnected")
+                     .child(Icon::new(IconName::Disconnected).size(IconSize::Small))
+-                    .tooltip(Tooltip::text("Disconnected"))
++                    .tooltip(Tooltip::text(chinese_ui_text("Disconnected")))
+                     .into_any_element(),
+             ),
+             client::Status::UpgradeRequired => {
+@@ -1198,7 +1220,7 @@ impl TitleBar {
+     pub fn render_sign_in_button(&mut self, _: &mut Context<Self>) -> Button {
+         let client = self.client.clone();
+         let workspace = self.workspace.clone();
+-        Button::new("sign_in", "Sign In")
++        Button::new("sign_in", chinese_ui_text("Sign In"))
+             .label_size(LabelSize::Small)
+             .tab_index(0isize)
+             .on_click(move |_, window, cx| {
+@@ -1317,7 +1339,10 @@ impl TitleBar {
+                                     .w_full()
+                                     .gap_1()
+                                     .justify_between()
+-                                    .child(Label::new("Restart to update Zed").color(Color::Accent))
++                                    .child(
++                                        Label::new(chinese_ui_text("Restart to update Zed"))
++                                            .color(Color::Accent),
++                                    )
+                                     .child(
+                                         Icon::new(IconName::Download)
+                                             .size(IconSize::Small)
+@@ -1385,8 +1410,11 @@ impl TitleBar {
+ 
+                         this.separator()
+                     })
+-                    .action("Settings", zed_actions::OpenSettings.boxed_clone())
+-                    .action("Keymap", Box::new(zed_actions::OpenKeymap))
++                    .action(
++                        chinese_ui_text("Settings"),
++                        zed_actions::OpenSettings.boxed_clone(),
++                    )
++                    .action(chinese_ui_text("Keymap"), Box::new(zed_actions::OpenKeymap))
+                     .action(
+                         "Themes…",
+                         zed_actions::theme_selector::Toggle::default().boxed_clone(),
+@@ -1431,7 +1459,7 @@ impl TitleBar {
+                     })
+                     .when(is_signed_in, |this| {
+                         this.separator()
+-                            .action("Sign Out", client::SignOut.boxed_clone())
++                            .action(chinese_ui_text("Sign Out"), client::SignOut.boxed_clone())
+                     })
+                 })
+                 .into()
+diff --git a/crates/zed/src/zed/windows_only_instance.rs b/crates/zed/src/zed/windows_only_instance.rs
+index c43e4f9..b731a60 100644
+--- a/crates/zed/src/zed/windows_only_instance.rs
++++ b/crates/zed/src/zed/windows_only_instance.rs
+@@ -31,7 +31,7 @@ fn is_first_instance() -> bool {
+         CreateMutexW(
+             None,
+             false,
+-            &HSTRING::from(format!("{}-Instance-Mutex", app_identifier())),
++            &HSTRING::from(format!("{}-zh-CN-Instance-Mutex", app_identifier())),
+         )
+         .expect("Unable to create instance mutex.")
+     };
+@@ -64,7 +64,7 @@ pub fn handle_single_instance(opener: OpenListener, args: &Args) -> bool {
+ fn with_pipe(f: &dyn Fn(String)) {
+     let pipe = unsafe {
+         CreateNamedPipeW(
+-            &HSTRING::from(format!("\\\\.\\pipe\\{}-Named-Pipe", app_identifier())),
++            &HSTRING::from(format!("\\\\.\\pipe\\{}-zh-CN-Named-Pipe", app_identifier())),
+             PIPE_ACCESS_INBOUND,
+             PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+             1,

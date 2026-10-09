@@ -1,0 +1,14 @@
+/source/
+/dist/
+/build-logs/
+/profile/
+/original-files/
+*.lnk
+*.zip
+*.tar.gz
+*.exe
+*.dll
+*.pdb
+*.log
+.DS_Store
+Thumbs.db

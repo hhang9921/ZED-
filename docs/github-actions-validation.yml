@@ -1,0 +1,14 @@
+name: Validate documentation and scripts
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate project
+        shell: pwsh
+        run: ./scripts/Validate-Project.ps1

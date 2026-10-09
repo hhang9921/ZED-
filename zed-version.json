@@ -1,0 +1,16 @@
+{
+  "project": "Zed Windows 简体中文补丁",
+  "repository": "https://github.com/hhang9921/ZED-",
+  "releaseTag": "v1.23.2-zh-CN.1",
+  "upstreamRepository": "https://github.com/zed-industries/zed.git",
+  "upstreamTag": "v1.23.2",
+  "upstreamCommit": "c0199504b9cce79bc27524950022ed701bc3ebd5",
+  "rustToolchain": "1.98.1",
+  "rustI18nVersion": "4.2.0",
+  "target": "x86_64-pc-windows-msvc",
+  "profile": "release-fast",
+  "buildJobs": 8,
+  "optimizationLevel": 1,
+  "debugSymbols": 0,
+  "conptyUrl": "https://github.com/microsoft/terminal/releases/download/v1.25.1912.0/Microsoft.Windows.Console.ConPTY.1.25.260710002-preview.nupkg"
+}

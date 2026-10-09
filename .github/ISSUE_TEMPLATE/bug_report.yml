@@ -1,0 +1,20 @@
+name: 问题反馈
+description: 报告启动、菜单、终端或 WSL 问题
+body:
+  - type: input
+    id: version
+    attributes:
+      label: 汉化版本和 Windows 版本
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤、预期结果和实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 截图或经过脱敏的日志
+      description: 不要附上访问令牌、私人代码或完整个人配置。

@@ -1,0 +1,13 @@
+name: 翻译建议
+description: 修正中文词条或提出需要汉化的界面
+body:
+  - type: textarea
+    id: text
+    attributes:
+      label: 界面位置、原文和建议翻译
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 截图或上下文
